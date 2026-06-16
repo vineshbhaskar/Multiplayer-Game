@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Football Arena</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { overscroll-behavior: none; }
+    body {
+      overflow: hidden; background: #000;
+      font-family: 'Segoe UI', sans-serif;
+      touch-action: none;
+      overscroll-behavior: none;
+      /* prevent iOS elastic scroll / pull-to-refresh */
+      position: fixed; width: 100%; height: 100%;
+    }
+    canvas { display: block; touch-action: none; }
+
+    /* ── Click-to-play overlay ───────────────────────────────────────────── */
+    #overlay {
+      position: fixed; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      background: rgba(0, 0, 0, 0.65);
+      cursor: pointer; z-index: 10; gap: 14px;
+    }
+    #overlay h1 {
+      color: #fff; font-size: clamp(24px, 5vw, 38px);
+      font-weight: 800; letter-spacing: 4px;
+      text-shadow: 0 3px 20px rgba(0,0,0,0.6);
+    }
+    #overlay .sub {
+      color: rgba(255,255,255,0.65); font-size: 14px; letter-spacing: 1px;
+    }
+    #overlay .play-btn {
+      margin-top: 8px; padding: 14px 40px;
+      border: 2px solid rgba(255,255,255,0.6); border-radius: 40px;
+      color: #fff; font-size: 17px; font-weight: 600; letter-spacing: 2px;
+      background: rgba(255,255,255,0.1);
+      transition: background 0.2s, border-color 0.2s;
+    }
+    #overlay:hover .play-btn { background: rgba(255,255,255,0.2); border-color: #fff; }
+    #overlay .controls-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 8px 24px; margin-top: 10px;
+      color: rgba(255,255,255,0.5); font-size: 13px; text-align: center;
+    }
+    #overlay .controls-grid span { color: rgba(255,255,255,0.9); font-weight: 600; }
+
+    /* ── In-game hint ────────────────────────────────────────────────────── */
+    #hint {
+      display: none; position: fixed; bottom: 20px; left: 50%;
+      transform: translateX(-50%);
+      color: rgba(255,255,255,0.4); font-size: 12px; letter-spacing: 1px;
+      pointer-events: none; text-shadow: 0 1px 4px rgba(0,0,0,0.7);
+    }
+
+    /* Crosshair dot (desktop only) */
+    #dot {
+      display: none; position: fixed; top: 50%; left: 50%;
+      transform: translate(-50%,-50%);
+      width: 6px; height: 6px; border-radius: 50%;
+      background: rgba(255,255,255,0.5); pointer-events: none; z-index: 5;
+    }
+
+    /* ── Stamina / Energy bar ─────────────────────────────────────────────── */
+    #stamina-wrap {
+      display: none;
+      position: fixed;
+      bottom: 52px; left: 50%;
+      transform: translateX(-50%);
+      pointer-events: none;
+      z-index: 20;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    #stamina-label {
+      color: rgba(255,255,255,0.55);
+      font-size: 10px;
+      letter-spacing: 2px;
+      font-weight: 600;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+      text-transform: uppercase;
+    }
+    #stamina-track {
+      width: 180px;
+      height: 7px;
+      background: rgba(0,0,0,0.45);
+      border-radius: 4px;
+      border: 1px solid rgba(255,255,255,0.15);
+      overflow: hidden;
+    }
+    #stamina-fill {
+      height: 100%;
+      width: 100%;
+      border-radius: 4px;
+      background: linear-gradient(90deg, #22c55e, #86efac);
+      transition: width 0.08s linear, background 0.3s;
+    }
+    #stamina-fill.low   { background: linear-gradient(90deg, #f59e0b, #fcd34d); }
+    #stamina-fill.empty { background: linear-gradient(90deg, #ef4444, #fca5a5); }
+  </style>
+</head>
+<body>
+  <div id="overlay">
+    <h1>⚽ FOOTBALL ARENA</h1>
+    <div class="sub">Multiplayer Game Platform</div>
+    <div class="play-btn">▶ &nbsp; CLICK TO PLAY</div>
+    <div class="controls-grid">
+      <div><span>W A S D</span><br>Move</div>
+      <div><span>Mouse</span><br>Look around</div>
+      <div><span>Shift</span><br>Run</div>
+      <div><span>ESC</span><br>Pause / unlock</div>
+      <div><span>↑ ↓ ← →</span><br>Also move</div>
+      <div></div>
+    </div>
+  </div>
+
+  <div id="hint">W A S D — Move &nbsp;|&nbsp; Shift — Sprint &nbsp;|&nbsp; Space — Kick &nbsp;|&nbsp; ESC — Pause</div>
+  <div id="dot"></div>
+
+  <!-- Energy bar (visible once gameplay starts) -->
+  <div id="stamina-wrap">
+    <div id="stamina-label">⚡ Energy</div>
+    <div id="stamina-track"><div id="stamina-fill"></div></div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
