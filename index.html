@@ -8,19 +8,175 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html { overscroll-behavior: none; }
     body {
-      overflow: hidden; background: #000;
-      font-family: 'Segoe UI', sans-serif;
+      overflow: hidden; background: #0a0a0f;
+      font-family: 'Segoe UI', system-ui, sans-serif;
       touch-action: none;
       overscroll-behavior: none;
-      /* prevent iOS elastic scroll / pull-to-refresh */
       position: fixed; width: 100%; height: 100%;
+      color: #fff;
     }
     canvas { display: block; touch-action: none; }
 
-    /* ── Click-to-play overlay ───────────────────────────────────────────── */
+    /* ── Shared screen base ──────────────────────────────────────────────── */
+    .screen {
+      position: fixed; inset: 0;
+      display: none;
+      flex-direction: column;
+      align-items: center; justify-content: center;
+      background: linear-gradient(160deg, #0d1117 0%, #0f1f10 50%, #0d1117 100%);
+      z-index: 50;
+      overflow-y: auto;
+      padding: 24px 16px;
+    }
+    .screen-card {
+      width: 100%; max-width: 420px;
+      display: flex; flex-direction: column; align-items: center;
+      gap: 14px;
+    }
+    .game-logo { font-size: 64px; line-height: 1; }
+    .screen h1 {
+      font-size: clamp(24px, 6vw, 34px);
+      font-weight: 900; letter-spacing: 4px;
+      background: linear-gradient(135deg, #4ade80, #22c55e);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .screen h2 {
+      font-size: clamp(18px, 5vw, 24px);
+      font-weight: 700; letter-spacing: 2px; color: #d1fae5;
+    }
+    .screen p { color: rgba(255,255,255,0.5); font-size: 14px; text-align: center; }
+
+    /* ── Inputs ──────────────────────────────────────────────────────────── */
+    input[type="text"] {
+      width: 100%; padding: 14px 18px;
+      background: rgba(255,255,255,0.07);
+      border: 1.5px solid rgba(255,255,255,0.15);
+      border-radius: 12px; color: #fff;
+      font-size: 17px; font-family: inherit;
+      outline: none; transition: border-color 0.2s;
+    }
+    input[type="text"]:focus { border-color: #4ade80; }
+    input[type="text"]::placeholder { color: rgba(255,255,255,0.3); }
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      20%     { transform: translateX(-8px); }
+      40%     { transform: translateX(8px); }
+      60%     { transform: translateX(-5px); }
+      80%     { transform: translateX(5px); }
+    }
+
+    /* ── Buttons ─────────────────────────────────────────────────────────── */
+    .btn-primary, .btn-secondary, .btn-ghost {
+      width: 100%; padding: 14px 20px;
+      border: none; border-radius: 12px;
+      font-size: 15px; font-weight: 700; letter-spacing: 1px;
+      font-family: inherit; cursor: pointer;
+      transition: transform 0.1s, opacity 0.2s;
+    }
+    .btn-primary:active, .btn-secondary:active, .btn-ghost:active { transform: scale(0.97); }
+    .btn-primary {
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      color: #fff;
+      box-shadow: 0 4px 20px rgba(34,197,94,0.35);
+    }
+    .btn-secondary {
+      background: rgba(255,255,255,0.1);
+      color: #d1fae5;
+      border: 1.5px solid rgba(255,255,255,0.2);
+    }
+    .btn-ghost {
+      background: transparent; color: rgba(255,255,255,0.4);
+      font-size: 13px; padding: 10px;
+    }
+
+    /* ── Divider ──────────────────────────────────────────────────────────── */
+    .divider {
+      width: 100%; display: flex; align-items: center; gap: 10px;
+      color: rgba(255,255,255,0.2); font-size: 12px;
+    }
+    .divider::before, .divider::after {
+      content: ''; flex: 1; height: 1px;
+      background: rgba(255,255,255,0.1);
+    }
+
+    /* ── Player badge (lobby) ─────────────────────────────────────────────── */
+    .player-badge {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 18px;
+      background: rgba(34,197,94,0.12);
+      border: 1px solid rgba(34,197,94,0.3);
+      border-radius: 24px; color: #4ade80;
+      font-size: 14px; font-weight: 600;
+    }
+
+    /* ── Room list (browse rooms screen) ──────────────────────────────────── */
+    #room-list {
+      width: 100%; display: flex; flex-direction: column; gap: 10px;
+      max-height: 55vh; overflow-y: auto;
+    }
+    .room-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 16px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+    }
+    .room-info { display: flex; flex-direction: column; gap: 3px; }
+    .room-host { font-weight: 600; font-size: 15px; color: #d1fae5; }
+    .room-count { font-size: 12px; color: rgba(255,255,255,0.4); }
+    .btn-join-item {
+      padding: 8px 20px;
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      color: #fff; border: none; border-radius: 8px;
+      font-size: 13px; font-weight: 700; cursor: pointer;
+    }
+    .no-rooms {
+      text-align: center; padding: 24px;
+      color: rgba(255,255,255,0.35); font-size: 14px; line-height: 1.8;
+    }
+
+    /* ── Waiting room ─────────────────────────────────────────────────────── */
+    .room-code-box {
+      display: flex; flex-direction: column; align-items: center;
+      padding: 16px 28px;
+      background: rgba(255,255,255,0.04);
+      border: 2px dashed rgba(255,255,255,0.2);
+      border-radius: 14px; gap: 4px;
+    }
+    .room-code-label { font-size: 10px; letter-spacing: 3px; color: rgba(255,255,255,0.4); }
+    .room-code-value {
+      font-size: 36px; font-weight: 900; letter-spacing: 10px;
+      color: #4ade80; font-family: monospace;
+    }
+    #waiting-players {
+      display: flex; flex-direction: column; gap: 10px; width: 100%;
+    }
+    .player-chip {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 16px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 10px; font-size: 15px; font-weight: 600;
+      color: #d1fae5;
+    }
+    #waiting-hint { font-size: 13px; color: rgba(255,255,255,0.4); text-align: center; }
+
+    /* ── Toast errors ─────────────────────────────────────────────────────── */
+    .toast {
+      position: fixed; top: 24px; left: 50%; transform: translateX(-50%);
+      background: #ef4444; color: #fff;
+      padding: 12px 24px; border-radius: 10px;
+      font-size: 14px; font-weight: 600;
+      opacity: 0; transition: opacity 0.3s;
+      pointer-events: none; z-index: 200;
+    }
+    .toast.show { opacity: 1; }
+
+    /* ── In-game HUD (hidden until game starts) ───────────────────────────── */
     #overlay {
       position: fixed; inset: 0;
-      display: flex; flex-direction: column;
+      display: none;
+      flex-direction: column;
       align-items: center; justify-content: center;
       background: rgba(0, 0, 0, 0.65);
       cursor: pointer; z-index: 10; gap: 14px;
@@ -30,17 +186,13 @@
       font-weight: 800; letter-spacing: 4px;
       text-shadow: 0 3px 20px rgba(0,0,0,0.6);
     }
-    #overlay .sub {
-      color: rgba(255,255,255,0.65); font-size: 14px; letter-spacing: 1px;
-    }
+    #overlay .sub { color: rgba(255,255,255,0.65); font-size: 14px; letter-spacing: 1px; }
     #overlay .play-btn {
       margin-top: 8px; padding: 14px 40px;
       border: 2px solid rgba(255,255,255,0.6); border-radius: 40px;
       color: #fff; font-size: 17px; font-weight: 600; letter-spacing: 2px;
       background: rgba(255,255,255,0.1);
-      transition: background 0.2s, border-color 0.2s;
     }
-    #overlay:hover .play-btn { background: rgba(255,255,255,0.2); border-color: #fff; }
     #overlay .controls-grid {
       display: grid; grid-template-columns: repeat(3, 1fr);
       gap: 8px 24px; margin-top: 10px;
@@ -48,15 +200,12 @@
     }
     #overlay .controls-grid span { color: rgba(255,255,255,0.9); font-weight: 600; }
 
-    /* ── In-game hint ────────────────────────────────────────────────────── */
     #hint {
       display: none; position: fixed; bottom: 20px; left: 50%;
       transform: translateX(-50%);
       color: rgba(255,255,255,0.4); font-size: 12px; letter-spacing: 1px;
-      pointer-events: none; text-shadow: 0 1px 4px rgba(0,0,0,0.7);
+      pointer-events: none;
     }
-
-    /* Crosshair dot (desktop only) */
     #dot {
       display: none; position: fixed; top: 50%; left: 50%;
       transform: translate(-50%,-50%);
@@ -64,47 +213,99 @@
       background: rgba(255,255,255,0.5); pointer-events: none; z-index: 5;
     }
 
-    /* ── Stamina / Energy bar ─────────────────────────────────────────────── */
+    /* ── Stamina bar ──────────────────────────────────────────────────────── */
     #stamina-wrap {
-      display: none;
-      position: fixed;
-      bottom: 52px; left: 50%;
-      transform: translateX(-50%);
-      pointer-events: none;
-      z-index: 20;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
+      display: none; position: fixed;
+      bottom: 52px; left: 50%; transform: translateX(-50%);
+      pointer-events: none; z-index: 20;
+      flex-direction: column; align-items: center; gap: 4px;
     }
     #stamina-label {
-      color: rgba(255,255,255,0.55);
-      font-size: 10px;
-      letter-spacing: 2px;
-      font-weight: 600;
+      color: rgba(255,255,255,0.55); font-size: 10px;
+      letter-spacing: 2px; font-weight: 600;
       text-shadow: 0 1px 4px rgba(0,0,0,0.8);
-      text-transform: uppercase;
     }
     #stamina-track {
-      width: 180px;
-      height: 7px;
+      width: 180px; height: 7px;
       background: rgba(0,0,0,0.45);
-      border-radius: 4px;
-      border: 1px solid rgba(255,255,255,0.15);
-      overflow: hidden;
+      border-radius: 4px; border: 1px solid rgba(255,255,255,0.15); overflow: hidden;
     }
     #stamina-fill {
-      height: 100%;
-      width: 100%;
-      border-radius: 4px;
+      height: 100%; width: 100%; border-radius: 4px;
       background: linear-gradient(90deg, #22c55e, #86efac);
       transition: width 0.08s linear, background 0.3s;
     }
     #stamina-fill.low   { background: linear-gradient(90deg, #f59e0b, #fcd34d); }
     #stamina-fill.empty { background: linear-gradient(90deg, #ef4444, #fca5a5); }
+
+    /* ── Multiplayer name tags ────────────────────────────────────────────── */
+    #player-tags {
+      position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+      display: none; gap: 12px; z-index: 20; pointer-events: none;
+    }
+    .ptag {
+      padding: 5px 14px;
+      background: rgba(0,0,0,0.55);
+      border-radius: 20px; font-size: 12px; font-weight: 600;
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+    .ptag.me { color: #4ade80; border-color: rgba(74,222,128,0.4); }
+    .ptag.them { color: #60a5fa; border-color: rgba(96,165,250,0.4); }
   </style>
 </head>
 <body>
+
+  <!-- ── 1. Entry screen: username ─────────────────────────────────────── -->
+  <div id="screen-entry" class="screen" style="display:flex">
+    <div class="screen-card">
+      <div class="game-logo">⚽</div>
+      <h1>FOOTBALL ARENA</h1>
+      <p>Create your username to get started</p>
+      <input id="username-input" type="text" placeholder="Enter username…"
+             maxlength="16" autocomplete="off" autocorrect="off" spellcheck="false" />
+      <button id="username-submit" class="btn-primary">Continue →</button>
+      <p style="font-size:11px;opacity:.4">Saved to this device · max 16 chars</p>
+    </div>
+  </div>
+
+  <!-- ── 2. Lobby screen ───────────────────────────────────────────────── -->
+  <div id="screen-lobby" class="screen">
+    <div class="screen-card">
+      <div class="player-badge">👤 <span id="lobby-username"></span></div>
+      <h2 style="margin-top:8px">Game Lobby</h2>
+      <button id="btn-create-room" class="btn-primary" style="margin-top:8px">🏟&nbsp; Create Room</button>
+      <button id="btn-join-room"   class="btn-secondary">🚪&nbsp; Browse Rooms</button>
+      <div class="divider">or</div>
+      <button id="btn-solo"        class="btn-ghost">▶ Play Solo</button>
+    </div>
+  </div>
+
+  <!-- ── 3. Room list screen ──────────────────────────────────────────── -->
+  <div id="screen-rooms" class="screen">
+    <div class="screen-card" style="max-width:480px">
+      <h2>Open Rooms</h2>
+      <div id="room-list"><p class="no-rooms">Loading rooms…</p></div>
+      <button id="btn-back-lobby" class="btn-ghost" style="margin-top:4px">← Back</button>
+    </div>
+  </div>
+
+  <!-- ── 4. Waiting room screen ───────────────────────────────────────── -->
+  <div id="screen-waiting" class="screen">
+    <div class="screen-card">
+      <h2>Waiting Room</h2>
+      <div class="room-code-box">
+        <div class="room-code-label">ROOM CODE</div>
+        <div class="room-code-value" id="waiting-room-code">------</div>
+      </div>
+      <p>Share this code with your friend to join</p>
+      <div id="waiting-players"></div>
+      <p id="waiting-hint">Waiting for players…</p>
+      <button id="btn-start-game" class="btn-primary" style="display:none;margin-top:4px">▶&nbsp; Start Game</button>
+      <button id="btn-leave-room" class="btn-ghost">← Leave Room</button>
+    </div>
+  </div>
+
+  <!-- ── In-game overlay (shown after game starts on desktop) ─────────── -->
   <div id="overlay">
     <h1>⚽ FOOTBALL ARENA</h1>
     <div class="sub">Multiplayer Game Platform</div>
@@ -112,9 +313,9 @@
     <div class="controls-grid">
       <div><span>W A S D</span><br>Move</div>
       <div><span>Mouse</span><br>Look around</div>
-      <div><span>Shift</span><br>Run</div>
-      <div><span>ESC</span><br>Pause / unlock</div>
-      <div><span>↑ ↓ ← →</span><br>Also move</div>
+      <div><span>Shift</span><br>Sprint</div>
+      <div><span>Space</span><br>Kick</div>
+      <div><span>ESC</span><br>Pause</div>
       <div></div>
     </div>
   </div>
@@ -122,11 +323,12 @@
   <div id="hint">W A S D — Move &nbsp;|&nbsp; Shift — Sprint &nbsp;|&nbsp; Space — Kick &nbsp;|&nbsp; ESC — Pause</div>
   <div id="dot"></div>
 
-  <!-- Energy bar (visible once gameplay starts) -->
   <div id="stamina-wrap">
     <div id="stamina-label">⚡ Energy</div>
     <div id="stamina-track"><div id="stamina-fill"></div></div>
   </div>
+
+  <div id="player-tags"></div>
 
   <script type="module" src="/src/main.js"></script>
 </body>
