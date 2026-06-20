@@ -8,7 +8,7 @@ import { getDatabase, ref, set, update, remove, onValue, get, onDisconnect } fro
 const FIREBASE_CONFIG = {
   apiKey:            "AIzaSyCwJjCpbtPfIKf7W4bo_UI38EvtS3Gh5WE",
   authDomain:        "multiplayer-game-94bdd.firebaseapp.com",
-  databaseURL:       "https://multiplayer-game-94bdd-default-rtdb.firebaseio.com",
+  databaseURL:       "https://multiplayer-game-94bdd-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId:         "multiplayer-game-94bdd",
   storageBucket:     "multiplayer-game-94bdd.firebasestorage.app",
   messagingSenderId: "739850398965",
