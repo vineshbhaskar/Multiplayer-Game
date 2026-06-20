@@ -266,6 +266,7 @@ function _startGame({ solo, roomCode, opponent }) {
       <div></div>
     `;
     overlay.addEventListener('click', () => {
+      window.tryFullscreen();
       overlay.style.display = 'none';
       staminaWrap.style.display = 'flex';
     }, { once: true });
@@ -306,13 +307,19 @@ function _startGame({ solo, roomCode, opponent }) {
   let syncTimer = 0;
   const SYNC_INTERVAL = 0.05;  // 20 Hz position updates
 
+  // Ball authority: whoever last touched the ball broadcasts it for 3 seconds
+  let ballAuthority = false;
+  let ballAuthorityTimer = 0;
+
   if (!solo && roomCode && isReady()) {
     listenPositions(roomCode, data => { remotePositions = data || {}; });
     listenBall(roomCode, data => {
-      // Apply remote ball state only if opponent was last to touch it
+      // Only apply if opponent is authority (they touched it more recently)
       if (data && data._by !== myUsername) {
         ball.position.set(data.x, data.y, data.z);
         ball.vel.set(data.vx, data.vy, data.vz);
+        ballAuthority = false;
+        ballAuthorityTimer = 0;
       }
     });
   }
@@ -371,12 +378,17 @@ function _startGame({ solo, roomCode, opponent }) {
 
     // ── Sync position + ball to Firebase ──────────────────────────────────
     if (!solo && roomCode && isReady()) {
+      // Claim ball authority when touched; broadcast for 3 seconds after
+      if (ballTouched) { ballAuthority = true; ballAuthorityTimer = 3.0; }
+      ballAuthorityTimer = Math.max(0, ballAuthorityTimer - delta);
+      if (ballAuthorityTimer === 0) ballAuthority = false;
+
       syncTimer += delta;
       if (syncTimer >= SYNC_INTERVAL) {
         syncTimer = 0;
         syncPosition(roomCode, myUsername,
           character.position.x, character.position.z, character.targetYaw);
-        if (ballTouched) {
+        if (ballAuthority) {
           syncBall(roomCode, {
             x: ball.position.x, y: ball.position.y, z: ball.position.z,
             vx: ball.vel.x, vy: ball.vel.y, vz: ball.vel.z,

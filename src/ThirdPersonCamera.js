@@ -82,7 +82,7 @@ export class ThirdPersonCamera {
       cp.z + this.distance * Math.cos(this.yaw) * cosP,
     );
 
-    this._currentPos.lerp(desired, 0.12);
+    this._currentPos.lerp(desired, 0.18);
     this.camera.position.copy(this._currentPos);
 
     const lookAt = new THREE.Vector3(cp.x, cp.y + this.heightOff * 0.7, cp.z);

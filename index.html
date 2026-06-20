@@ -336,14 +336,12 @@
   <div id="player-tags"></div>
 
   <script>
-    // Request fullscreen on first tap (hides browser bar on mobile)
-    function tryFullscreen() {
+    // Called by main.js when the play button is tapped
+    window.tryFullscreen = function() {
       const el = document.documentElement;
-      if (el.requestFullscreen) el.requestFullscreen();
+      if (el.requestFullscreen) el.requestFullscreen().catch(()=>{});
       else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
-    }
-    document.addEventListener('touchstart', tryFullscreen, { once: true });
-    document.addEventListener('click', tryFullscreen, { once: true });
+    };
   </script>
   <script type="module" src="/src/main.js"></script>
 </body>

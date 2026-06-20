@@ -92,8 +92,8 @@ export class PlayerController {
 
     if (this.mobile?.isMoving()) {
       const m = this.mobile.movement;
-      dir.addScaledVector(right, -m.x);
-      dir.addScaledVector(fwd,   -m.y);
+      dir.addScaledVector(right, m.x);   // positive m.x = joystick right = move right
+      dir.addScaledVector(fwd,  -m.y);   // positive m.y = joystick down  = move back
     }
 
     dir.y = 0;
