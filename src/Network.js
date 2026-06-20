@@ -6,13 +6,13 @@ import { getDatabase, ref, set, update, remove, onValue, get, onDisconnect } fro
 // Guide: https://console.firebase.google.com → New project → Web app → copy config
 // Also enable Realtime Database and set rules to allow read/write (see README).
 const FIREBASE_CONFIG = {
-  apiKey:            "AIzaSyPLACEHOLDER",
-  authDomain:        "football-arena-demo.firebaseapp.com",
-  databaseURL:       "https://football-arena-demo-default-rtdb.firebaseio.com",
-  projectId:         "football-arena-demo",
-  storageBucket:     "football-arena-demo.appspot.com",
-  messagingSenderId: "000000000000",
-  appId:             "1:000000000000:web:PLACEHOLDER",
+  apiKey:            "AIzaSyCwJjCpbtPfIKf7W4bo_UI38EvtS3Gh5WE",
+  authDomain:        "multiplayer-game-94bdd.firebaseapp.com",
+  databaseURL:       "https://multiplayer-game-94bdd-default-rtdb.firebaseio.com",
+  projectId:         "multiplayer-game-94bdd",
+  storageBucket:     "multiplayer-game-94bdd.firebasestorage.app",
+  messagingSenderId: "739850398965",
+  appId:             "1:739850398965:web:fd37e2aa6f66957c8ee9bc",
 };
 
 let db = null;
